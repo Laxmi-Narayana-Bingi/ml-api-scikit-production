@@ -1,3 +1,4 @@
+print("THIS IS THE MAIN MODULE BEING EXECUTED")
 from fastapi import FastAPI
 import joblib
 import pandas as pd
