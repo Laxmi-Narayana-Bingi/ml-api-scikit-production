@@ -1,9 +1,9 @@
 print("THIS IS THE MAIN MODULE BEING EXECUTED")
+
 from fastapi import FastAPI
 import joblib
 import pandas as pd
-# Temporarily comment out pydantic imports to isolate if schemas.py is the issue
-# from app.schemas import ChurnInput, ChurnPrediction
+# from app.schemas import ChurnInput, ChurnPrediction   # commented out for now
 
 app = FastAPI(title="Customer Churn Prediction API")
 
@@ -23,7 +23,8 @@ def root():
         "message": "API is running",
         "docs_url": "/docs",
         "health_url": "/health",
-        "predict_url": "POST /predict (currently in debug mode)"
+        "debug_test_url": "/debug-test",
+        "predict_url": "POST /predict (debug mode)"
     }
 
 @app.get("/health")
@@ -35,28 +36,26 @@ def health_check():
 def debug_test():
     return {"debug": "this plain GET route should appear in /docs"}
 
-# Temporary simplified version - no Pydantic dependency
-# This helps check if the route registers at all
 @app.post("/predict")
 def predict_churn():
     if model is None:
         return {"detail": "Model not loaded - check server logs"}
     
-    # For testing: always return a fixed response
-    # Later restore full logic once route is confirmed working
+    # Debug/simplified response (no input required yet)
     return {
         "test_message": "Predict endpoint is now reachable!",
-        "churn_probability": 0.42,  # dummy value
+        "churn_probability": 0.42,
         "will_churn": False
     }
 
-# Original full version - commented out for debugging
+# Original version - commented out until debug POST works
 """
 @app.post("/predict", response_model=ChurnPrediction)
 def predict_churn(input_data: ChurnInput):
-    # Convert to DataFrame for the pipeline
-    input_df = pd.DataFrame([input_data.dict()])
+    if model is None:
+        return {"detail": "Model not loaded"}
     
+    input_df = pd.DataFrame([input_data.dict()])
     probability = model.predict_proba(input_df)[0][1]
     prediction = probability >= 0.5
     
