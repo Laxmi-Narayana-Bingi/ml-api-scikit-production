@@ -63,3 +63,7 @@ def predict_churn(input_data: ChurnInput):
 """
 
 print("predict endpoint registered (debug version)")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=False)
