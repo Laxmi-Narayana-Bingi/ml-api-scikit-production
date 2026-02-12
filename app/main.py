@@ -1,36 +1,54 @@
 from fastapi import FastAPI
 import joblib
 import pandas as pd
-from app.schemas import ChurnInput, ChurnPrediction
+# Temporarily comment out pydantic imports to isolate if schemas.py is the issue
+# from app.schemas import ChurnInput, ChurnPrediction
 
 app = FastAPI(title="Customer Churn Prediction API")
 
-# Load model (this will show error in logs if file missing)
+print("FastAPI app created - routes should register next")
+
+# Load model with debug
 try:
     model = joblib.load("models/churn_model.joblib")
     print("Model loaded successfully from models/churn_model.joblib")
 except Exception as e:
     print(f"Model loading failed: {str(e)}")
-    model = None  # Don't crash the app
+    model = None
 
 @app.get("/")
 def root():
     return {
         "message": "API is running",
-        "docs": "/docs",
-        "health": "/health",
-        "predict": "POST /predict"
+        "docs_url": "/docs",
+        "health_url": "/health",
+        "predict_url": "POST /predict (currently in debug mode)"
     }
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "model": "ready" if model is not None else "failed to load"}
+    model_status = "ready" if model is not None else "failed to load"
+    return {"status": "healthy", "model": model_status}
 
+# Temporary simplified version - no Pydantic dependency
+# This helps check if the route registers at all
+@app.post("/predict")
+def predict_churn():
+    if model is None:
+        return {"detail": "Model not loaded - check server logs"}
+    
+    # For testing: always return a fixed response
+    # Later restore full logic once route is confirmed working
+    return {
+        "test_message": "Predict endpoint is now reachable!",
+        "churn_probability": 0.42,  # dummy value
+        "will_churn": False
+    }
+
+# Original full version - commented out for debugging
+"""
 @app.post("/predict", response_model=ChurnPrediction)
 def predict_churn(input_data: ChurnInput):
-    if model is None:
-        return {"detail": "Model not loaded - check logs"}
-    
     # Convert to DataFrame for the pipeline
     input_df = pd.DataFrame([input_data.dict()])
     
@@ -41,3 +59,6 @@ def predict_churn(input_data: ChurnInput):
         "churn_probability": float(probability),
         "will_churn": bool(prediction)
     }
+"""
+
+print("predict endpoint registered (debug version)")
